@@ -1,17 +1,4 @@
-.instructor-details {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            
-            .detail-item {
-                font-size: 0.9em;
-                padding: 8px 12px;
-            }
-            
-            .detail-label {
-                min-width: 70px;
-                font-size: 0.85em;
-            }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -218,11 +205,6 @@
             font-weight: 300;
         }
         
-        .payslip-header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
         .payslip-content {
             padding: 30px;
         }
@@ -237,8 +219,30 @@
         
         .employee-info h3 {
             font-size: 1.5em;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .employee-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            margin-right: 8px;
+            min-width: 80px;
         }
         
         .salary-details {
@@ -310,26 +314,6 @@
             font-size: 2.5em;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .print-btn {
-            margin-top: 25px;
-            padding: 15px 30px;
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: block;
-            margin: 25px auto 0;
-        }
-        
-        .print-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
         }
         
         .error-message {
@@ -418,60 +402,20 @@
             .employee-chips {
                 justify-content: center;
             }
-        }
-        
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
+            
+            .employee-details {
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
             
-            .container {
-                box-shadow: none;
-                background: white;
-                padding: 0;
-                margin: 0;
-                max-width: 100%;
+            .detail-item {
+                font-size: 0.9em;
+                padding: 6px 10px;
             }
             
-            .header,
-            .status-section,
-            .search-section,
-            .print-btn,
-            .error-message {
-                display: none !important;
-            }
-            
-            .payslip {
-                margin: 0;
-                box-shadow: none;
-                border: none;
-                border-radius: 0;
-                page-break-inside: avoid;
-            }
-            
-            .payslip-header {
-                background: #667eea !important;
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .employee-info {
-                background: #f093fb !important;
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .total-section {
-                background: #667eea !important;
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .salary-item {
-                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-                border: 1px solid #e0e0e0;
+            .detail-label {
+                min-width: 70px;
+                font-size: 0.85em;
             }
         }
     </style>
@@ -479,7 +423,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔗 구글 스프레드시트 연동 급여명세서</h1>
+            <h1>📋 구글 스프레드시트 연동 급여명세서</h1>
             <p>실시간으로 구글 스프레드시트 데이터를 불러와 급여명세서를 생성합니다</p>
         </div>
         
@@ -511,13 +455,26 @@
         
         <div class="payslip" id="payslip">
             <div class="payslip-header">
-                <h2>📋 급여명세서</h2>
-                <p id="payslipDate">급여 지급 내역</p>
+                <h2 id="payslipTitle">📋 급여명세서</h2>
             </div>
             
             <div class="payslip-content">
                 <div class="employee-info">
                     <h3 id="employeeNameDisplay">👤 직원명</h3>
+                    <div class="employee-details">
+                        <div class="detail-item">
+                            <span class="detail-label">🏢 소속지점:</span>
+                            <span id="employeeBranch">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📅 급여월:</span>
+                            <span id="salaryMonth">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">💰 지급일:</span>
+                            <span id="paymentDate">-</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="salary-details">
@@ -540,22 +497,17 @@
                     <h3>💎 실수령액</h3>
                     <div class="total-amount" id="finalAmount">0원</div>
                 </div>
-                
-                <button class="print-btn" onclick="window.print()" style="display: none;">🖨️ 인쇄하기</button>
             </div>
         </div>
     </div>
 
     <script>
-        let employeeData = {};
-        let salaryColumns = [];
+        let basicInfoData = {};  // 기본 정보 (첫 번째 테이블)
+        let salaryData = {};     // 급여 데이터 (두 번째 테이블)
         
         // 구글 스프레드시트 ID
         const SPREADSHEET_ID = '1UXjVrDeamV2e0xacvyMTVZw6_JS1P4JiSf969QFfaNk';
-        const SHEET_NAME = 'Sheet1'; // 시트 이름 (필요시 변경)
-        
-        // 구글 스프레드시트 CSV URL 생성
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
         
         // 페이지 로드 시 데이터 불러오기
         window.addEventListener('load', function() {
@@ -591,10 +543,11 @@
                 
                 if (processSpreadsheetData(csvData)) {
                     // 성공 상태 표시
+                    const employeeCount = Object.keys(basicInfoData).length;
                     statusSection.innerHTML = `
                         <div class="status-icon">✅</div>
                         <div class="status-text">데이터 로드 완료!</div>
-                        <div class="status-subtext">직원 ${Object.keys(employeeData).length}명의 급여 데이터가 준비되었습니다</div>
+                        <div class="status-subtext">직원 ${employeeCount}명의 급여 데이터가 준비되었습니다</div>
                         <button class="refresh-btn" onclick="loadSpreadsheetData()">🔄 새로고침</button>
                     `;
                     
@@ -616,14 +569,13 @@
             }
         }
         
-        // CSV 파싱 함수 (간단한 파서)
+        // CSV 파싱 함수
         function parseCSV(text) {
             const lines = text.split('\n');
             const result = [];
             
             for (let line of lines) {
                 if (line.trim()) {
-                    // 간단한 CSV 파싱 (따옴표 처리 포함)
                     const row = [];
                     let current = '';
                     let inQuotes = false;
@@ -650,81 +602,85 @@
         // 스프레드시트 데이터 처리
         function processSpreadsheetData(data) {
             try {
-                console.log('스프레드시트 데이터:', data);
+                console.log('전체 데이터:', data);
                 
-                if (data.length < 2) {
+                if (data.length < 10) {
                     throw new Error('데이터가 충분하지 않습니다.');
                 }
                 
-                // 헤더 행 찾기 (첫 번째 행부터 확인)
-                let headerRowIndex = -1;
-                let nameColumnIndex = -1;
-                
-                for (let i = 0; i < Math.min(3, data.length); i++) {
+                // 첫 번째 테이블 (기본 정보) 처리 - 1~8행
+                basicInfoData = {};
+                for (let i = 2; i < Math.min(9, data.length); i++) { // 3행부터 9행까지
                     const row = data[i];
-                    if (row && row.length > 0) {
-                        for (let j = 0; j < row.length; j++) {
-                            if (row[j] && (row[j].toString().includes('이름') || 
-                                          row[j].toString().includes('직원') ||
-                                          (i === 1 && j === 0))) { // 두 번째 행의 첫 번째 컬럼
-                                headerRowIndex = i;
-                                nameColumnIndex = j;
-                                break;
+                    if (row && row[1]) { // B열에 이름이 있는 경우
+                        const name = row[1].toString().trim();
+                        if (name) {
+                            basicInfoData[name] = {
+                                이름: name,
+                                소속지점: row[2] || '',
+                                급여월: row[3] || '',
+                                지급일: row[4] || ''
+                            };
+                        }
+                    }
+                }
+                
+                // 두 번째 테이블 (급여 데이터) 처리 - 12행부터
+                salaryData = {};
+                let salaryStartRow = -1;
+                
+                // 급여 데이터 시작점 찾기 (헤더가 있는 행)
+                for (let i = 10; i < data.length; i++) {
+                    const row = data[i];
+                    if (row && row[1] === '이름') {
+                        salaryStartRow = i;
+                        break;
+                    }
+                }
+                
+                if (salaryStartRow === -1) {
+                    throw new Error('급여 데이터 헤더를 찾을 수 없습니다.');
+                }
+                
+                const salaryHeaders = data[salaryStartRow];
+                console.log('급여 헤더:', salaryHeaders);
+                
+                // 급여 데이터 처리
+                for (let i = salaryStartRow + 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (row && row[1]) { // B열에 이름이 있는 경우
+                        const name = row[1].toString().trim();
+                        if (name) {
+                            salaryData[name] = {};
+                            
+                            // 각 컬럼의 데이터 저장
+                            for (let j = 1; j < salaryHeaders.length; j++) {
+                                const headerName = salaryHeaders[j];
+                                if (headerName) {
+                                    const value = row[j];
+                                    let numValue = 0;
+                                    
+                                    if (value !== undefined && value !== null && value !== '') {
+                                        const cleanValue = value.toString().replace(/,/g, '');
+                                        numValue = parseFloat(cleanValue) || 0;
+                                    }
+                                    
+                                    salaryData[name][headerName] = numValue;
+                                }
                             }
                         }
-                        if (headerRowIndex !== -1) break;
                     }
                 }
                 
-                // 기본값으로 두 번째 행을 헤더로 사용
-                if (headerRowIndex === -1) {
-                    headerRowIndex = 1;
-                    nameColumnIndex = 0;
+                console.log('기본 정보 데이터:', basicInfoData);
+                console.log('급여 데이터:', salaryData);
+                
+                if (Object.keys(basicInfoData).length === 0) {
+                    throw new Error('유효한 기본 정보 데이터를 찾을 수 없습니다.');
                 }
                 
-                const headers = data[headerRowIndex];
-                console.log('헤더:', headers);
-                
-                // 급여 컬럼들 설정
-                salaryColumns = [];
-                for (let i = 0; i < headers.length; i++) {
-                    if (headers[i] && headers[i].toString().trim()) {
-                        salaryColumns.push({
-                            index: i,
-                            name: headers[i].toString().trim()
-                        });
-                    }
-                }
-                
-                // 직원 데이터 처리
-                employeeData = {};
-                for (let i = headerRowIndex + 1; i < data.length; i++) {
-                    const row = data[i];
-                    if (!row || !row[nameColumnIndex]) continue;
-                    
-                    const employeeName = row[nameColumnIndex].toString().trim();
-                    if (!employeeName || employeeName === '') continue;
-                    
-                    employeeData[employeeName] = {};
-                    
-                    salaryColumns.forEach(col => {
-                        const value = row[col.index];
-                        let numValue = 0;
-                        
-                        if (value !== undefined && value !== null && value !== '') {
-                            // 쉼표 제거 후 숫자 변환
-                            const cleanValue = value.toString().replace(/,/g, '');
-                            numValue = parseFloat(cleanValue) || 0;
-                        }
-                        
-                        employeeData[employeeName][col.name] = numValue;
-                    });
-                }
-                
-                console.log('처리된 직원 데이터:', employeeData);
-                
-                if (Object.keys(employeeData).length === 0) {
-                    throw new Error('유효한 직원 데이터를 찾을 수 없습니다.');
+                if (Object.keys(salaryData).length === 0) {
+                    throw new Error('유효한 급여 데이터를 찾을 수 없습니다.');
                 }
                 
                 return true;
@@ -740,7 +696,7 @@
             const employeeChips = document.getElementById('employeeChips');
             employeeChips.innerHTML = '';
             
-            Object.keys(employeeData).forEach(name => {
+            Object.keys(basicInfoData).forEach(name => {
                 const chip = document.createElement('div');
                 chip.className = 'employee-chip';
                 chip.textContent = name;
@@ -765,9 +721,11 @@
                 return;
             }
             
-            const employee = employeeData[employeeName];
-            if (!employee) {
-                showError(`⚠️ "${employeeName}" 직원을 찾을 수 없습니다.`);
+            const basicInfo = basicInfoData[employeeName];
+            const salaryInfo = salaryData[employeeName];
+            
+            if (!basicInfo || !salaryInfo) {
+                showError(`⚠️ "${employeeName}" 직원의 데이터를 찾을 수 없습니다.`);
                 payslip.style.display = 'none';
                 return;
             }
@@ -775,20 +733,45 @@
             // 급여명세서 표시
             document.getElementById('employeeNameDisplay').textContent = `👤 ${employeeName}`;
             
+            // 기본 정보 표시
+            document.getElementById('employeeBranch').textContent = basicInfo.소속지점 || '-';
+            
+            // 급여월 포맷팅
+            const salaryMonth = basicInfo.급여월 || '';
+            let formattedMonth = salaryMonth;
+            if (salaryMonth.includes('-')) {
+                const [year, month] = salaryMonth.split('-');
+                formattedMonth = `${year}년 ${parseInt(month)}월`;
+            }
+            document.getElementById('salaryMonth').textContent = formattedMonth || '-';
+            
+            // 지급일 포맷팅
+            const paymentDate = basicInfo.지급일 || '';
+            let formattedDate = paymentDate;
+            if (paymentDate.includes('-')) {
+                const [year, month, day] = paymentDate.split('-');
+                formattedDate = `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+            }
+            document.getElementById('paymentDate').textContent = formattedDate || '-';
+            
+            // 급여명세서 제목 업데이트
+            document.getElementById('payslipTitle').textContent = 
+                formattedMonth ? `📋 ${formattedMonth} 급여명세서` : '📋 급여명세서';
+            
             // 지급 항목들 생성
             const salaryGrid = document.getElementById('salaryGrid');
             salaryGrid.innerHTML = '';
             
-            const excludeColumns = ['합계', '소득세', '지방세', '소계'];
+            const excludeColumns = ['합계', '소득세', '지방세', '소계', '이름'];
             
-            salaryColumns.forEach(col => {
-                if (!excludeColumns.includes(col.name) && col.name !== '이름') {
-                    const amount = employee[col.name] || 0;
+            Object.keys(salaryInfo).forEach(key => {
+                if (!excludeColumns.includes(key)) {
+                    const amount = salaryInfo[key] || 0;
                     if (amount > 0) {
                         const item = document.createElement('div');
                         item.className = 'salary-item';
                         item.innerHTML = `
-                            <span>${col.name}</span>
+                            <span>${key}</span>
                             <span>${formatCurrency(amount)}</span>
                         `;
                         salaryGrid.appendChild(item);
@@ -801,7 +784,7 @@
             deductionGrid.innerHTML = '';
             
             // 합계 표시
-            const totalAmount = employee['합계'] || 0;
+            const totalAmount = salaryInfo['합계'] || 0;
             if (totalAmount > 0) {
                 const totalItem = document.createElement('div');
                 totalItem.className = 'salary-item';
@@ -814,7 +797,7 @@
             
             // 공제 항목들
             ['소득세', '지방세'].forEach(deductionType => {
-                const amount = employee[deductionType] || 0;
+                const amount = salaryInfo[deductionType] || 0;
                 if (amount > 0) {
                     const item = document.createElement('div');
                     item.className = 'salary-item';
@@ -827,8 +810,8 @@
             });
             
             // 실수령액
-            const finalAmount = employee['소계'] || 
-                               (totalAmount - (employee['소득세'] || 0) - (employee['지방세'] || 0));
+            const finalAmount = salaryInfo['소계'] || 
+                               (totalAmount - (salaryInfo['소득세'] || 0) - (salaryInfo['지방세'] || 0));
             document.getElementById('finalAmount').textContent = formatCurrency(finalAmount);
             
             payslip.style.display = 'block';
