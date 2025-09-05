@@ -810,37 +810,4 @@
             });
             
             // 실수령액
-            const finalAmount = salaryInfo['소계'] || 
-                               (totalAmount - (salaryInfo['소득세'] || 0) - (salaryInfo['지방세'] || 0));
-            document.getElementById('finalAmount').textContent = formatCurrency(finalAmount);
-            
-            payslip.style.display = 'block';
-            payslip.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // 숫자를 통화 형식으로 변환
-        function formatCurrency(amount) {
-            return Math.round(amount).toLocaleString() + '원';
-        }
-        
-        // 오류 메시지 표시
-        function showError(message) {
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-        
-        // 오류 메시지 숨기기
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-        
-        // 엔터키로 검색
-        document.getElementById('employeeName').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                generatePayslip();
-            }
-        });
-    </script>
-</body>
-</html>
+            const finalAmount
