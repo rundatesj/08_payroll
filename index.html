@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+.employee-details {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .detail-item {
+                font-size: 0.9em;
+                padding: 6px 10px;
+            }
+            
+            .detail-label {
+                min-width: 70px;
+                font-size: 0.85em;
+            }<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -411,17 +424,54 @@
             body {
                 background: white;
                 padding: 0;
+                margin: 0;
             }
             
             .container {
                 box-shadow: none;
                 background: white;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
             }
             
+            .header,
             .status-section,
             .search-section,
-            .print-btn {
-                display: none;
+            .print-btn,
+            .error-message {
+                display: none !important;
+            }
+            
+            .payslip {
+                margin: 0;
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                page-break-inside: avoid;
+            }
+            
+            .payslip-header {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .employee-info {
+                background: #f093fb !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .total-section {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .salary-item {
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                border: 1px solid #e0e0e0;
             }
         }
     </style>
