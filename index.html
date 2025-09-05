@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구글 스프레드시트 연동 급여명세서 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status-section {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+            text-align: center;
+        }
+        
+        .status-icon {
+            font-size: 3em;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .status-text {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .status-subtext {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .search-section {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+            display: none;
+        }
+        
+        .search-section.show {
+            display: block;
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box label {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #employeeName {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        #employeeName:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .employee-list {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .employee-list h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .employee-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .employee-chip {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .employee-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+        }
+        
+        .payslip {
+            display: none;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .payslip-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .payslip-header h2 {
+            font-size: 2em;
+            margin-bottom: 5px;
+            font-weight: 300;
+        }
+        
+        .payslip-header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .payslip-content {
+            padding: 30px;
+        }
+        
+        .employee-info {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            color: white;
+        }
+        
+        .employee-info h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .salary-details {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .salary-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .salary-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .salary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .salary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .salary-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .salary-item span:first-child {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .salary-item span:last-child {
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .total-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 25px;
+            text-align: center;
+        }
+        
+        .total-section h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+        
+        .total-amount {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .print-btn {
+            margin-top: 25px;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 25px auto 0;
+        }
+        
+        .print-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .error-message {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            #employeeName {
+                min-width: unset;
+            }
+            
+            .salary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .total-amount {
+                font-size: 2em;
+            }
+            
+            .employee-chips {
+                justify-content: center;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                background: white;
+            }
+            
+            .status-section,
+            .search-section,
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 구글 스프레드시트 연동 급여명세서</h1>
+            <p>실시간으로 구글 스프레드시트 데이터를 불러와 급여명세서를 생성합니다</p>
+        </div>
+        
+        <div class="status-section" id="statusSection">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div class="status-text">구글 스프레드시트에서 데이터를 불러오는 중...</div>
+                <div class="status-subtext">잠시만 기다려주세요</div>
+                <button class="refresh-btn" onclick="loadSpreadsheetData()" style="display: none;">🔄 다시 시도</button>
+            </div>
+        </div>
+        
+        <div class="search-section" id="searchSection">
+            <div class="search-box">
+                <label for="employeeName">👤 직원 이름:</label>
+                <input type="text" id="employeeName" placeholder="직원 이름을 입력하세요" autocomplete="off">
+                <button class="search-btn" onclick="generatePayslip()">🔍 급여명세서 생성</button>
+            </div>
+            
+            <div class="employee-list" id="employeeList">
+                <h4>📋 직원 목록 (클릭하여 선택)</h4>
+                <div class="employee-chips" id="employeeChips"></div>
+            </div>
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            ⚠️ 오류가 발생했습니다.
+        </div>
+        
+        <div class="payslip" id="payslip">
+            <div class="payslip-header">
+                <h2>📋 급여명세서</h2>
+                <p id="payslipDate">급여 지급 내역</p>
+            </div>
+            
+            <div class="payslip-content">
+                <div class="employee-info">
+                    <h3 id="employeeNameDisplay">👤 직원명</h3>
+                </div>
+                
+                <div class="salary-details">
+                    <div class="salary-section">
+                        <h4>💵 지급 항목</h4>
+                        <div class="salary-grid" id="salaryGrid">
+                            <!-- 동적으로 생성될 급여 항목들 -->
+                        </div>
+                    </div>
+                    
+                    <div class="salary-section">
+                        <h4>📊 합계 및 공제</h4>
+                        <div class="salary-grid" id="deductionGrid">
+                            <!-- 동적으로 생성될 공제 항목들 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="total-section">
+                    <h3>💎 실수령액</h3>
+                    <div class="total-amount" id="finalAmount">0원</div>
+                </div>
+                
+                <button class="print-btn" onclick="window.print()">🖨️ 인쇄하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let employeeData = {};
+        let salaryColumns = [];
+        
+        // 구글 스프레드시트 ID
+        const SPREADSHEET_ID = '1UXjVrDeamV2e0xacvyMTVZw6_JS1P4JiSf969QFfaNk';
+        const SHEET_NAME = 'Sheet1'; // 시트 이름 (필요시 변경)
+        
+        // 구글 스프레드시트 CSV URL 생성
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+        
+        // 페이지 로드 시 데이터 불러오기
+        window.addEventListener('load', function() {
+            loadSpreadsheetData();
+        });
+        
+        // 구글 스프레드시트 데이터 불러오기
+        async function loadSpreadsheetData() {
+            const statusSection = document.getElementById('statusSection');
+            const searchSection = document.getElementById('searchSection');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            try {
+                // 로딩 상태 표시
+                statusSection.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div class="status-text">구글 스프레드시트에서 데이터를 불러오는 중...</div>
+                        <div class="status-subtext">잠시만 기다려주세요</div>
+                    </div>
+                `;
+                
+                hideError();
+                
+                // CSV 데이터 가져오기
+                const response = await fetch(CSV_URL);
+                if (!response.ok) {
+                    throw new Error('스프레드시트에 접근할 수 없습니다. 공유 설정을 확인해주세요.');
+                }
+                
+                const csvText = await response.text();
+                const csvData = parseCSV(csvText);
+                
+                if (processSpreadsheetData(csvData)) {
+                    // 성공 상태 표시
+                    statusSection.innerHTML = `
+                        <div class="status-icon">✅</div>
+                        <div class="status-text">데이터 로드 완료!</div>
+                        <div class="status-subtext">직원 ${Object.keys(employeeData).length}명의 급여 데이터가 준비되었습니다</div>
+                        <button class="refresh-btn" onclick="loadSpreadsheetData()">🔄 새로고침</button>
+                    `;
+                    
+                    showEmployeeList();
+                    searchSection.classList.add('show');
+                } else {
+                    throw new Error('데이터 처리 중 오류가 발생했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 오류:', error);
+                statusSection.innerHTML = `
+                    <div class="status-icon">❌</div>
+                    <div class="status-text">데이터 로드 실패</div>
+                    <div class="status-subtext">${error.message}</div>
+                    <button class="refresh-btn" onclick="loadSpreadsheetData()">🔄 다시 시도</button>
+                `;
+                showError('스프레드시트 데이터를 불러올 수 없습니다: ' + error.message);
+            }
+        }
+        
+        // CSV 파싱 함수 (간단한 파서)
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const result = [];
+            
+            for (let line of lines) {
+                if (line.trim()) {
+                    // 간단한 CSV 파싱 (따옴표 처리 포함)
+                    const row = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            row.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    row.push(current.trim());
+                    result.push(row);
+                }
+            }
+            
+            return result;
+        }
+        
+        // 스프레드시트 데이터 처리
+        function processSpreadsheetData(data) {
+            try {
+                console.log('스프레드시트 데이터:', data);
+                
+                if (data.length < 2) {
+                    throw new Error('데이터가 충분하지 않습니다.');
+                }
+                
+                // 헤더 행 찾기 (첫 번째 행부터 확인)
+                let headerRowIndex = -1;
+                let nameColumnIndex = -1;
+                
+                for (let i = 0; i < Math.min(3, data.length); i++) {
+                    const row = data[i];
+                    if (row && row.length > 0) {
+                        for (let j = 0; j < row.length; j++) {
+                            if (row[j] && (row[j].toString().includes('이름') || 
+                                          row[j].toString().includes('직원') ||
+                                          (i === 1 && j === 0))) { // 두 번째 행의 첫 번째 컬럼
+                                headerRowIndex = i;
+                                nameColumnIndex = j;
+                                break;
+                            }
+                        }
+                        if (headerRowIndex !== -1) break;
+                    }
+                }
+                
+                // 기본값으로 두 번째 행을 헤더로 사용
+                if (headerRowIndex === -1) {
+                    headerRowIndex = 1;
+                    nameColumnIndex = 0;
+                }
+                
+                const headers = data[headerRowIndex];
+                console.log('헤더:', headers);
+                
+                // 급여 컬럼들 설정
+                salaryColumns = [];
+                for (let i = 0; i < headers.length; i++) {
+                    if (headers[i] && headers[i].toString().trim()) {
+                        salaryColumns.push({
+                            index: i,
+                            name: headers[i].toString().trim()
+                        });
+                    }
+                }
+                
+                // 직원 데이터 처리
+                employeeData = {};
+                for (let i = headerRowIndex + 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (!row || !row[nameColumnIndex]) continue;
+                    
+                    const employeeName = row[nameColumnIndex].toString().trim();
+                    if (!employeeName || employeeName === '') continue;
+                    
+                    employeeData[employeeName] = {};
+                    
+                    salaryColumns.forEach(col => {
+                        const value = row[col.index];
+                        let numValue = 0;
+                        
+                        if (value !== undefined && value !== null && value !== '') {
+                            // 쉼표 제거 후 숫자 변환
+                            const cleanValue = value.toString().replace(/,/g, '');
+                            numValue = parseFloat(cleanValue) || 0;
+                        }
+                        
+                        employeeData[employeeName][col.name] = numValue;
+                    });
+                }
+                
+                console.log('처리된 직원 데이터:', employeeData);
+                
+                if (Object.keys(employeeData).length === 0) {
+                    throw new Error('유효한 직원 데이터를 찾을 수 없습니다.');
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('데이터 처리 오류:', error);
+                throw error;
+            }
+        }
+        
+        // 직원 목록 표시
+        function showEmployeeList() {
+            const employeeChips = document.getElementById('employeeChips');
+            employeeChips.innerHTML = '';
+            
+            Object.keys(employeeData).forEach(name => {
+                const chip = document.createElement('div');
+                chip.className = 'employee-chip';
+                chip.textContent = name;
+                chip.onclick = () => {
+                    document.getElementById('employeeName').value = name;
+                    generatePayslip();
+                };
+                employeeChips.appendChild(chip);
+            });
+        }
+        
+        // 급여명세서 생성
+        function generatePayslip() {
+            const employeeName = document.getElementById('employeeName').value.trim();
+            const payslip = document.getElementById('payslip');
+            
+            hideError();
+            
+            if (!employeeName) {
+                showError('⚠️ 직원 이름을 입력해주세요.');
+                payslip.style.display = 'none';
+                return;
+            }
+            
+            const employee = employeeData[employeeName];
+            if (!employee) {
+                showError(`⚠️ "${employeeName}" 직원을 찾을 수 없습니다.`);
+                payslip.style.display = 'none';
+                return;
+            }
+            
+            // 급여명세서 표시
+            document.getElementById('employeeNameDisplay').textContent = `👤 ${employeeName}`;
+            
+            // 지급 항목들 생성
+            const salaryGrid = document.getElementById('salaryGrid');
+            salaryGrid.innerHTML = '';
+            
+            const excludeColumns = ['합계', '소득세', '지방세', '소계'];
+            
+            salaryColumns.forEach(col => {
+                if (!excludeColumns.includes(col.name) && col.name !== '이름') {
+                    const amount = employee[col.name] || 0;
+                    if (amount > 0) {
+                        const item = document.createElement('div');
+                        item.className = 'salary-item';
+                        item.innerHTML = `
+                            <span>${col.name}</span>
+                            <span>${formatCurrency(amount)}</span>
+                        `;
+                        salaryGrid.appendChild(item);
+                    }
+                }
+            });
+            
+            // 공제 항목들 생성
+            const deductionGrid = document.getElementById('deductionGrid');
+            deductionGrid.innerHTML = '';
+            
+            // 합계 표시
+            const totalAmount = employee['합계'] || 0;
+            if (totalAmount > 0) {
+                const totalItem = document.createElement('div');
+                totalItem.className = 'salary-item';
+                totalItem.innerHTML = `
+                    <span>지급 합계</span>
+                    <span>${formatCurrency(totalAmount)}</span>
+                `;
+                deductionGrid.appendChild(totalItem);
+            }
+            
+            // 공제 항목들
+            ['소득세', '지방세'].forEach(deductionType => {
+                const amount = employee[deductionType] || 0;
+                if (amount > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'salary-item';
+                    item.innerHTML = `
+                        <span>${deductionType}</span>
+                        <span style="color: #e74c3c;">-${formatCurrency(amount)}</span>
+                    `;
+                    deductionGrid.appendChild(item);
+                }
+            });
+            
+            // 실수령액
+            const finalAmount = employee['소계'] || 
+                               (totalAmount - (employee['소득세'] || 0) - (employee['지방세'] || 0));
+            document.getElementById('finalAmount').textContent = formatCurrency(finalAmount);
+            
+            payslip.style.display = 'block';
+            payslip.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 숫자를 통화 형식으로 변환
+        function formatCurrency(amount) {
+            return Math.round(amount).toLocaleString() + '원';
+        }
+        
+        // 오류 메시지 표시
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        // 오류 메시지 숨기기
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        // 엔터키로 검색
+        document.getElementById('employeeName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generatePayslip();
+            }
+        });
+    </script>
+</body>
+</html>
